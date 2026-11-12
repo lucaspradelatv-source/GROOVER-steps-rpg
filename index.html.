@@ -1,0 +1,462 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GROOVERSTEP'S RPG</title>
+<style>
+:root {
+  --bg:#080d18;
+  --panel:#101a2b;
+  --blue:#2785e8;
+  --light:#75bdff;
+  --text:#f4f7fb;
+  --muted:#aab8ca;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:Arial,sans-serif;
+}
+header{
+  position:sticky;top:0;z-index:20;
+  display:flex;justify-content:space-between;
+  align-items:center;flex-wrap:wrap;gap:15px;
+  padding:18px 5%;
+  background:#080d18ed;
+  border-bottom:1px solid #31577d;
+}
+.brand{font-weight:900;letter-spacing:1px}
+.brand span{color:var(--light)}
+nav{display:flex;gap:20px}
+nav a{color:var(--muted);text-decoration:none}
+nav a:hover{color:var(--light)}
+.hero{
+  min-height:380px;display:grid;place-items:center;
+  text-align:center;padding:65px 20px;
+  background:radial-gradient(ellipse at top,#19375a,#080d18 70%);
+}
+.hero h1{font-size:clamp(2.2rem,7vw,4.5rem);margin:12px 0}
+.hero h1 span{color:var(--light)}
+.hero p{color:var(--muted)}
+.eyebrow{color:var(--light);letter-spacing:4px}
+section{padding:55px 5%;max-width:1300px;margin:auto}
+h2{font-size:2rem;margin:0 0 8px}
+.subtitle{color:var(--muted)}
+.rail{
+  display:flex;gap:18px;overflow-x:auto;
+  padding:15px 2px 22px;
+  scroll-snap-type:x mandatory;
+  scrollbar-color:var(--blue) #101a2b;
+  cursor:grab;
+}
+.rail.dragging{cursor:grabbing;scroll-snap-type:none}
+.card{
+  flex:0 0 270px;background:var(--panel);
+  border:1px solid #31577d;border-radius:10px;
+  overflow:hidden;scroll-snap-align:start;
+}
+.cover{
+  height:190px;display:grid;place-items:center;
+  font-size:27px;font-weight:900;text-align:center;
+  letter-spacing:3px;
+}
+.blood{background:linear-gradient(135deg,#101a2a,#681c2b,#170b13)}
+.blood2{background:linear-gradient(135deg,#080d18,#9b2636,#260d19)}
+.heaven{background:radial-gradient(circle at 65% 35%,#d1e4ff,#526f9d 20%,#101b36 75%)}
+.card-info{padding:16px}
+.card-info h3{margin:0}
+.status{color:var(--light);font-size:13px}
+.card-info p{color:var(--muted);font-size:14px}
+button{
+  padding:10px 15px;border:1px solid var(--blue);
+  border-radius:6px;background:#12375b;
+  color:white;cursor:pointer;transition:.2s;
+}
+button:hover{box-shadow:0 0 15px #2785e899;filter:brightness(1.15)}
+.news{
+  padding:25px;background:var(--panel);
+  border:1px solid #31577d;border-right:3px solid var(--light);
+  border-radius:10px;
+  display:grid;grid-template-columns:1fr auto;gap:20px;
+}
+.label{color:var(--light);font-size:12px;letter-spacing:2px;font-weight:bold}
+.players{color:var(--muted)}
+.date{font-size:clamp(1.7rem,5vw,2.7rem);font-weight:900;color:var(--light)}
+.center{text-align:center;margin-top:20px}
+.toast{
+  position:fixed;bottom:25px;left:50%;z-index:30;
+  transform:translate(-50%,20px);opacity:0;
+  pointer-events:none;padding:15px 20px;
+  background:#34465dcc;border:1px solid var(--light);
+  border-radius:8px;backdrop-filter:blur(12px);
+  transition:.25s;text-align:center;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.game-box{background:var(--panel);padding:12px;border-radius:10px;border:1px solid #31577d}
+.screen{
+  position:relative;height:310px;overflow:hidden;
+  border-radius:7px;background:linear-gradient(#101c38,#26344b);
+  touch-action:pan-y;
+}
+.world{position:absolute;inset:0}
+.cloud{
+  position:absolute;width:100px;height:20px;
+  border-radius:20px;background:#8492a9;opacity:.3;
+}
+.cloud:before,.cloud:after{
+  content:"";position:absolute;background:inherit;border-radius:50%;
+}
+.cloud:before{width:35px;height:30px;top:-13px;left:15px}
+.cloud:after{width:42px;height:35px;top:-17px;right:10px}
+.ground{
+  position:absolute;bottom:0;height:53px;width:100%;
+  background:repeating-linear-gradient(90deg,#293d35 0 18px,#354b3e 18px 36px);
+  border-top:5px solid #52604a;
+}
+.red{
+  position:absolute;inset:0 0 53px;opacity:0;
+  background:linear-gradient(90deg,transparent,#a10e25);
+  pointer-events:none;
+}
+.player{
+  position:absolute;left:50%;bottom:53px;
+  width:22px;height:48px;transform:translateX(-50%);z-index:4;
+}
+.head{position:absolute;top:0;left:5px;width:13px;height:13px;background:#d9a77d}
+.shirt{position:absolute;top:13px;left:2px;width:19px;height:17px;background:#eee}
+.pants{position:absolute;top:30px;left:3px;width:17px;height:18px;background:#315c9c}
+.house{
+  position:absolute;left:1700px;bottom:53px;
+  width:110px;height:100px;cursor:pointer;
+}
+.roof{
+  position:absolute;top:0;left:-10px;width:130px;height:40px;
+  background:#32171d;clip-path:polygon(50% 0,100% 100%,0 100%);
+}
+.house-body{position:absolute;bottom:0;width:110px;height:72px;background:#704b43;border:4px solid #33242b}
+.door{position:absolute;bottom:0;left:42px;width:25px;height:45px;background:#171820}
+.interior{
+  display:none;position:absolute;inset:0;
+  background:linear-gradient(#201d2c,#34252b 75%,#201c23 75%);
+  z-index:8;
+}
+.window{
+  position:absolute;right:35px;top:30px;
+  width:60px;height:65px;background:#9a2736;border:7px solid #3a2c32;
+}
+.jason{
+  position:absolute;left:65%;bottom:25%;width:42px;height:100px;
+}
+.body{position:absolute;bottom:0;width:36px;height:65px;background:#171a20}
+.mask{
+  position:absolute;top:0;left:4px;width:32px;height:34px;
+  background:#c8c9bd;border:3px solid #777;border-radius:8px;
+}
+.mask:before{content:"•  •";position:absolute;top:7px;left:5px;color:#222}
+.dialogue{
+  display:none;position:absolute;z-index:12;
+  bottom:10px;left:10px;right:10px;
+  padding:13px;background:#09111ef5;
+  border:2px solid var(--light);border-radius:8px;
+}
+.dialogue-name{color:var(--light);font-weight:bold}
+.dialogue-text{min-height:45px;margin:10px 0;white-space:pre-wrap}
+.dialogue-actions{display:flex;justify-content:space-between;gap:8px}
+.question{display:none;gap:7px;margin-top:10px}
+.question input{
+  flex:1;min-width:0;padding:10px;
+  background:#101c2c;border:1px solid #476987;
+  border-radius:6px;color:white;
+}
+.hud{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-top:12px;color:var(--muted)}
+.controls{display:flex;gap:8px}
+footer{
+  text-align:center;padding:25px;
+  color:var(--muted);border-top:1px solid #31577d;
+}
+@media(max-width:600px){
+  header{align-items:flex-start;flex-direction:column}
+  nav{gap:14px}
+  .news{grid-template-columns:1fr}
+  .card{flex-basis:240px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">GROOVERSTEP'S <span>RPG</span></div>
+  <nav>
+    <a href="#inicio">Início</a>
+    <a href="#central">Central</a>
+    <a href="#novidades">Novidades</a>
+    <a href="#jogo">Explorar</a>
+  </nav>
+</header>
+
+<main>
+<section class="hero" id="inicio">
+  <div>
+    <div class="eyebrow">UM PORTAL. VÁRIOS UNIVERSOS.</div>
+    <h1>BEM-VINDO A<br><span>GROOVERSTEP'S RPG</span></h1>
+    <p>Histórias, mistérios e aventuras criadas para você explorar.</p>
+  </div>
+</section>
+
+<section id="central">
+  <h2>Central de RPGs</h2>
+  <p class="subtitle">Arraste para os lados e descubra nossos universos.</p>
+
+  <div class="rail" id="rail">
+    <article class="card">
+      <div class="cover blood">BLOOD<br>MIST</div>
+      <div class="card-info">
+        <h3>Blood Mist</h3>
+        <div class="status">Finalizado</div>
+        <p>Um universo de mistérios e acontecimentos.</p>
+        <button onclick="showRpg('Blood Mist')">Ver RPG</button>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="cover blood2">BLOOD<br>MIST 2</div>
+      <div class="card-info">
+        <h3>Blood Mist 2</h3>
+        <div class="status">Em desenvolvimento</div>
+        <p>Uma nova etapa do universo Blood Mist.</p>
+        <button onclick="showRpg('Blood Mist 2')">Ver RPG</button>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="cover heaven">HEAVEN<br>MOON</div>
+      <div class="card-info">
+        <h3>Heaven Moon</h3>
+        <div class="status">Quase finalizado</div>
+        <p>Um universo próprio. Mais informações em breve.</p>
+        <button onclick="showRpg('Heaven Moon')">Ver RPG</button>
+      </div>
+    </article>
+  </div>
+  <p id="rpgMessage" class="subtitle" aria-live="polite">As páginas individuais serão adicionadas na próxima etapa.</p>
+</section>
+
+<section id="novidades">
+  <h2>Novidades</h2>
+  <p class="subtitle">Informações da próxima sessão.</p>
+  <div class="news">
+    <div>
+      <div class="label">MESTRE</div>
+      <strong>Lucas</strong>
+      <div class="label" style="margin-top:18px">PLAYERS</div>
+      <p class="players">Rodrigo · Cauã · André · Lorenzo · Rafael</p>
+    </div>
+    <div>
+      <div class="label">SESSÃO</div>
+      <div class="date">21/11/2026</div>
+    </div>
+  </div>
+  <div class="center">
+    <button id="refresh">ATUALIZAR</button>
+  </div>
+</section>
+
+<section id="jogo">
+  <h2>Uma pequena exploração</h2>
+  <p class="subtitle">Encontre a casa e conheça o cara da Central.</p>
+  <div class="game-box">
+    <div class="screen" id="screen">
+      <div class="world" id="world">
+        <div class="cloud" style="left:12%;top:50px"></div>
+        <div class="cloud" style="left:65%;top:90px"></div>
+        <div class="house" id="house">
+          <div class="roof"></div>
+          <div class="house-body"><div class="door"></div></div>
+        </div>
+      </div>
+      <div class="red" id="red"></div>
+      <div class="ground"></div>
+      <div class="player">
+        <div class="head"></div><div class="shirt"></div><div class="pants"></div>
+      </div>
+      <div class="interior" id="interior">
+        <div class="window"></div>
+        <div class="jason"><div class="mask"></div><div class="body"></div></div>
+      </div>
+      <div class="dialogue" id="dialogue">
+        <div class="dialogue-name">JASON — O CARA DA CENTRAL</div>
+        <div class="dialogue-text" id="dialogueText"></div>
+        <div class="dialogue-actions">
+          <button id="skip">Pular fala</button>
+          <button id="continue">Continuar</button>
+        </div>
+        <form class="question" id="question">
+          <input id="questionInput" placeholder="Escreva sua pergunta..." maxlength="400">
+          <button type="submit">Enviar</button>
+        </form>
+        <small style="color:#aab8ca">Protótipo: Jason ainda não está conectado à IA real.</small>
+      </div>
+    </div>
+    <div class="hud">
+      <span id="status">Use → ou D para andar.</span>
+      <div class="controls">
+        <button id="walk">→</button>
+        <button id="enter">Entrar (E)</button>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<div class="toast" id="toast">Nenhuma novidade por enquanto.</div>
+<footer>GROOVERSTEP'S RPG · Um portal. Vários universos.</footer>
+
+<script>
+function showRpg(name) {
+  document.getElementById('rpgMessage').textContent =
+    name + ': a página individual será construída na próxima etapa.';
+}
+
+// Catálogo arrastável.
+const rail = document.getElementById('rail');
+let dragging = false, startX = 0, initialScroll = 0;
+rail.addEventListener('pointerdown', e => {
+  if (e.target.closest('button')) return;
+  dragging = true;
+  startX = e.clientX;
+  initialScroll = rail.scrollLeft;
+  rail.classList.add('dragging');
+  rail.setPointerCapture(e.pointerId);
+});
+rail.addEventListener('pointermove', e => {
+  if (dragging) rail.scrollLeft = initialScroll - (e.clientX - startX);
+});
+function stopDrag() {
+  dragging = false;
+  rail.classList.remove('dragging');
+}
+rail.addEventListener('pointerup', stopDrag);
+rail.addEventListener('pointercancel', stopDrag);
+
+// Aviso das novidades.
+let toastTimer;
+document.getElementById('refresh').addEventListener('click', () => {
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+});
+
+// Mini game.
+const world = document.getElementById('world');
+const red = document.getElementById('red');
+const interior = document.getElementById('interior');
+const dialogue = document.getElementById('dialogue');
+const dialogueText = document.getElementById('dialogueText');
+const questionForm = document.getElementById('question');
+const questionInput = document.getElementById('questionInput');
+const statusText = document.getElementById('status');
+
+let position = 0;
+const housePosition = 1700;
+let inside = false;
+let typing = null;
+
+const intro = 'Olá, eu sou a Central. Eu sou o Jason, o cara da Central. Você precisa de alguma ajuda? Está com alguma dúvida sobre RPG?';
+
+function render() {
+  world.style.transform = `translateX(${-position}px)`;
+  red.style.opacity = Math.min(position / housePosition, 1);
+  if (position >= housePosition - 120 && !inside) {
+    statusText.textContent = 'Você encontrou uma casa! Pressione E para entrar.';
+  }
+}
+
+function walk() {
+  if (inside || position >= housePosition) return;
+  position = Math.min(position + 14, housePosition);
+  render();
+}
+
+function enterHouse() {
+  if (inside || position < housePosition - 120) return;
+  inside = true;
+  interior.style.display = 'block';
+  statusText.textContent = 'Você entrou na casa. Clique em Jason para conversar.';
+  interior.addEventListener('click', startDialogue, {once:true});
+  const hint = document.createElement('div');
+  hint.id = 'hint';
+  hint.textContent = 'CLIQUE PARA CONVERSAR COM JASON';
+  hint.style.cssText = 'position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);background:#101a2b;border:1px solid #75bdff;padding:10px;border-radius:6px;white-space:nowrap;font-size:12px';
+  interior.appendChild(hint);
+}
+
+function showIntro() {
+  clearInterval(typing);
+  dialogueText.textContent = '';
+  let i = 0;
+  typing = setInterval(() => {
+    dialogueText.textContent += intro[i] || '';
+    i++;
+    if (i >= intro.length) clearInterval(typing);
+  }, 25);
+}
+
+function finishIntro() {
+  clearInterval(typing);
+  dialogueText.textContent = intro;
+  document.getElementById('skip').style.display = 'none';
+  document.getElementById('continue').style.display = 'none';
+  questionForm.style.display = 'flex';
+  questionInput.focus();
+}
+
+function startDialogue() {
+  document.getElementById('hint')?.remove();
+  dialogue.style.display = 'block';
+  showIntro();
+}
+
+document.getElementById('skip').addEventListener('click', finishIntro);
+document.getElementById('continue').addEventListener('click', finishIntro);
+document.getElementById('walk').addEventListener('pointerdown', e => {
+  e.preventDefault();
+  walk();
+});
+document.getElementById('enter').addEventListener('click', enterHouse);
+document.getElementById('house').addEventListener('click', enterHouse);
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
+    e.preventDefault();
+    walk();
+  }
+  if (e.key.toLowerCase() === 'e') enterHouse();
+  if (e.key === 'Enter' && dialogue.style.display === 'block') finishIntro();
+});
+
+// Respostas temporárias. A integração real com IA será feita no servidor.
+questionForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const question = questionInput.value.trim();
+  if (!question) return;
+
+  const endingPattern = /(final|fim|desfecho|como termina|quem morre|revela o segredo)/i;
+  let answer;
+
+  if (endingPattern.test(question)) {
+    answer = 'Boa sorte.';
+  } else {
+    answer = 'Ainda não tenho informações suficientes para responder. O mestre precisa adicionar esse conteúdo à minha base de conhecimento.';
+  }
+
+  dialogueText.textContent = 'Você: ' + question + '\n\nJason: ' + answer;
+  questionInput.value = '';
+});
+
+render();
+</script>
+</body>
+</html>
